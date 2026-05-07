@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: research-landscape-api
+    runtime: python
+    rootDir: .
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: research-landscape-db
+          property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENALEX_EMAIL
+        sync: false
+      - key: CORS_ORIGINS
+        value: "*"
+
+  - type: cron
+    name: research-landscape-refresh
+    runtime: python
+    rootDir: backend
+    schedule: "0 2 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/manual_refresh.py
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: research-landscape-db
+          property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENALEX_EMAIL
+        sync: false
+
+databases:
+  - name: research-landscape-db
+    plan: free

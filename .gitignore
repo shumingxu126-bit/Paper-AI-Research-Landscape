@@ -1,0 +1,8 @@
+.env
+backend/.env
+*.db
+*.log
+*.out
+*.err
+__pycache__/
+*.py[cod]
