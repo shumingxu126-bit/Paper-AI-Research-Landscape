@@ -28,14 +28,16 @@ def main():
     settings.request_sleep_seconds = 0.8
 
     init_db()
-    db = SessionLocal()
     try:
+        db = SessionLocal()
         ensure_route_snapshots(db, use_claude=False)
+        db.close()
         success = 0
         failed = 0
         for idx, item in enumerate(iter_routes(), start=1):
             route = item["route"]
             print({"index": idx, "route": route["name"], "status": "start"})
+            db = SessionLocal()
             try:
                 papers = _fetch_route_papers(
                     route["name"],
@@ -70,6 +72,15 @@ def main():
                 success += 1
                 print({"index": idx, "route": route["name"], "status": "success", "papers": len(papers)})
             except Exception as exc:
+                try:
+                    db.rollback()
+                except Exception:
+                    pass
+                try:
+                    db.close()
+                except Exception:
+                    pass
+                db = SessionLocal()
                 state = (
                     db.query(RouteRefreshState)
                     .filter(RouteRefreshState.route_slug == item["route_slug"])
@@ -78,14 +89,18 @@ def main():
                 if state:
                     state.status = "error"
                     state.error_message = str(exc)
-                db.commit()
+                    db.commit()
                 failed += 1
                 print({"index": idx, "route": route["name"], "status": "error", "error": str(exc)})
+            finally:
+                db.close()
             time.sleep(1.0)
 
+        db = SessionLocal()
         print({"ok": True, "success": success, "failed": failed, "final_status": get_refresh_status(db)})
-    finally:
         db.close()
+    finally:
+        pass
 
 
 if __name__ == "__main__":

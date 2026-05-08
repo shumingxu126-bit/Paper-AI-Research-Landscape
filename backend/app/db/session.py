@@ -5,11 +5,16 @@ from app.db.base import Base
 
 settings = get_settings()
 
-engine = create_engine(
-    settings.database_url,
-    future=True,
-    pool_pre_ping=True,
-)
+engine_kwargs = {
+    "future": True,
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
+
+if settings.database_url.startswith("postgresql://") or settings.database_url.startswith("postgres://"):
+    engine_kwargs["connect_args"] = {"sslmode": "require"}
+
+engine = create_engine(settings.database_url, **engine_kwargs)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 
