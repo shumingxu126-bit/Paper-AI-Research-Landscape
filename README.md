@@ -1,32 +1,50 @@
-# Research Landscape Backend - Part 1
+# Paper AI Research Landscape
 
-这是第 1 部分：后端完整包。
+This repository contains:
 
-包含：
-- FastAPI 后端
-- SQLite / PostgreSQL 兼容数据库层
-- OpenAlex + arXiv 抓取
-- Claude 摘要接入位（Anthropic Messages API）
-- taxonomy 驱动的路线刷新
-- 手动 / 定时刷新脚本
+- a FastAPI backend
+- a single-page frontend
+- OpenAlex + arXiv paper collection
+- route snapshots, trends, and recommended papers
 
-## 目录
-- `backend/`：后端代码
-- `config/taxonomy_full.yaml`：全面知识图谱路线
+## Project structure
 
-## 本地启动
-1. 创建虚拟环境并安装依赖
-2. 复制 `.env.example` 为 `.env`
-3. 运行：
-   - `cd backend`
-   - `uvicorn app.main:app --reload`
-4. 手动刷新：
-   - `python scripts/run_refresh.py`
+- `backend/`: API, database models, refresh logic, scripts
+- `frontend/`: single HTML frontend
+- `config/taxonomy_full.yaml`: route taxonomy
+- `render.yaml`: minimal Render web-service configuration
 
-## 必填环境变量
-- `ANTHROPIC_API_KEY`
-- `OPENALEX_EMAIL`（建议）
-- `DATABASE_URL`（可选；默认 sqlite）
+## Local run
 
-## 安全说明
-不要把 API key 写死到代码或上传到 GitHub。你之前发在对话里的 key 建议立即轮换。
+### Backend
+
+```powershell
+cd backend
+uvicorn app.main:app --reload
+```
+
+### Frontend
+
+Open:
+
+- `frontend/index.html`
+
+or serve it locally and open:
+
+- `http://127.0.0.1:8080`
+
+## Useful scripts
+
+- `python backend\scripts\manual_refresh.py`
+- `python backend\scripts\run_refresh.py`
+- `python backend\scripts\backfill_year.py`
+- `python backend\scripts\rebuild_snapshots.py`
+- `python backend\scripts\refresh_route.py "Route Name"`
+- `python backend\scripts\refresh_domain.py "Domain Name"`
+- `python backend\scripts\retry_failed_backfill.py`
+
+## Deployment
+
+See:
+
+- `DEPLOY_WINDOWS_RENDER.md`
